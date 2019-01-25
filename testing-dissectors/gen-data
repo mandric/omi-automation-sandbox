@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o noclobber
+
+PCAP_BASE="${PCAP_BASE-./Directory/Data}"
+LUA_BASE="${LUA_BASE-./wireshark-lua}"
+INPUT="$1"
+OUTPUT_DIR="$2"
+SELF=$(basename "$BASH_SOURCE")
+
+function usage {
+  cat <<EOF
+Usage: $SELF <path to pcap-to-lua.txt> <output dir>
+
+Generate JSON dissector data from a pcap-to-lua.txt file.  The results are
+saved in output dir with the same directory structure taken from
+pcap-to-lua.txt.
+
+Asserts every pcap file has a corresponding lua file.
+
+Asserts pcap entries are unique. Uses `set -o noclobber` so overwriting fails.
+EOF
+}
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  usage
+  exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+cat "$INPUT" | while read line; do
+  pcap="$(echo $line | sed 's/:.*//')"
+  lua="$(echo $line | sed 's/.*://')"
+  key="$(./get-key "$LUA_BASE/$lua")"
+  dir=$(dirname "$pcap")
+  file=$(basename "$pcap" | sed 's/\.pcap/\.json/')
+  mkdir -p "$OUTPUT_DIR/$dir"
+  ./parse "$PCAP_BASE/$pcap" "$LUA_BASE/$lua" "$key" > \
+    "$OUTPUT_DIR/$dir/$file";
+done

@@ -1,0 +1,21 @@
+version: 2
+
+jobs:
+  pcap_tests:
+    working_directory: ~/repo/testing-dissectors
+    docker:
+      - image: alpine
+        #https://circleci.com/docs/2.0/circleci-images/#buildpack-deps
+    steps:
+      - checkout:
+          path: ~/repo
+      - run: apk --update --no-cache add bash bats make git jq tshark
+      - run: make
+      - store_artifacts:
+          path: actual
+
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - pcap_tests
