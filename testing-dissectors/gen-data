@@ -20,7 +20,8 @@ pcap-to-lua.txt.
 
 Asserts every pcap file has a corresponding lua file.
 
-Asserts pcap entries are unique. Uses `set -o noclobber` so overwriting fails.
+Asserts pcap entries are unique. Uses \`set -o noclobber\` so overwriting
+fails.
 EOF
 }
 
